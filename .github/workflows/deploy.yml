@@ -1,0 +1,33 @@
+name: Deploy Portfolio to VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t lavesh-portfolio .
+
+      - name: Remove old container
+        run: docker rm -f lavesh-portfolio || true
+
+      - name: Start portfolio container
+        run: |
+          docker run -d \
+            --name lavesh-portfolio \
+            --restart unless-stopped \
+            -p 9999:80 \
+            lavesh-portfolio
+
+      - name: Verify deployment
+        run: |
+          sleep 3
+          curl --fail http://localhost:9999
